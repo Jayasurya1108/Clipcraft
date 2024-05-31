@@ -135,7 +135,7 @@ youtube_link = st.text_input("Enter YouTube Video Link:")
 summary_length = st.selectbox("Select Summary Length:", ["Short", "Medium", "Detailed"])
 custom_prompt = st.text_area("Custom Prompt (Optional):", default_prompt)
 translate_option = st.checkbox("Translate Summary")
-target_language = st.selectbox("Select Target Language for Translation:", ["es", "fr", "de", "zh", "ja"]) if translate_option else None
+target_language = st.selectbox("Select Target Language for Translation:", ["Spanish", "French", "German", "Chinese", "Japanese"]) if translate_option else None
 
 # Function to get appropriate summary length prompt
 def get_prompt(length):
