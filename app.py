@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import os
 import google.generativeai as genai
 from youtube_transcript_api import YouTubeTranscriptApi
+from urllib.parse import urlparse, parse_qs
 
 # Load environment variables
 load_dotenv()
@@ -15,10 +16,26 @@ prompt = """You are a YouTube video summarizer. You will be taking the transcrip
 and summarizing the entire video and providing the important summary in points
 within 250 words. Please provide the summary of the text given here:  """
 
+# Function to extract the video ID from a YouTube URL
+def extract_video_id(youtube_video_url):
+    try:
+        parsed_url = urlparse(youtube_video_url)
+        video_id = parse_qs(parsed_url.query).get('v')
+        if video_id:
+            return video_id[0]
+        else:
+            raise ValueError("Invalid YouTube URL")
+    except Exception as e:
+        st.error(f"Error extracting video ID: {e}")
+        return None
+
 # Function to extract transcript details from YouTube video
 def extract_transcript_details(youtube_video_url):
+    video_id = extract_video_id(youtube_video_url)
+    if not video_id:
+        return None
+    
     try:
-        video_id = youtube_video_url.split("=")[1]
         transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
         transcript_text = " ".join([item["text"] for item in transcript_list])
         return transcript_text
@@ -52,8 +69,9 @@ st.title("YouTube Transcript to Detailed Notes Converter")
 youtube_link = st.text_input("Enter YouTube Video Link:")
 
 if youtube_link:
-    video_id = youtube_link.split("=")[1]
-    st.write(f"Video ID: {video_id}")
+    video_id = extract_video_id(youtube_link)
+    if video_id:
+        st.write(f"Video ID: {video_id}")
 
 # Button to get detailed notes
 if st.button("Get Detailed Notes"):
