@@ -5,3 +5,4 @@ youtube-transcript-api
 textblob
 matplotlib
 wordcloud
+googletrans==4.0.0-rc1
