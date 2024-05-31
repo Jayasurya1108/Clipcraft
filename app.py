@@ -45,9 +45,7 @@ load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # Define the default prompt
-default_prompt = """You are a YouTube video summarizer. You will be taking the transcript text
-and summarizing the entire video and providing the important summary in points
-within 250 words. Please provide the summary of the text given here:  """
+default_prompt = """Custize your needs... """
 
 # Function to extract the video ID from a YouTube URL
 def extract_video_id(youtube_video_url):
