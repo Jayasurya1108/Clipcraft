@@ -1,6 +1,27 @@
 import streamlit as st
 from dotenv import load_dotenv
 import os
+import subprocess
+
+# Function to install a library
+def install_library(library):
+    subprocess.run([os.sys.executable, "-m", "pip", "install", library])
+
+# List of required libraries
+required_libraries = [
+    "google-generativeai",
+    "youtube-transcript-api",
+    "textblob",
+    "matplotlib",
+    "wordcloud",
+    "googletrans==4.0.0-rc1",
+    "nltk",
+]
+
+# Install required libraries
+for lib in required_libraries:
+    install_library(lib)
+
 import google.generativeai as genai
 from youtube_transcript_api import YouTubeTranscriptApi
 from urllib.parse import urlparse, parse_qs
@@ -9,6 +30,13 @@ import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 import base64
 from googletrans import Translator
+import nltk
+
+# Download necessary NLTK corpora
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('brown')
+nltk.download('wordnet')
 
 # Load environment variables
 load_dotenv()
@@ -121,39 +149,4 @@ def get_prompt(length):
         return "Summarize the following text in 250-500 words: "
 
 if youtube_link:
-    video_id = extract_video_id(youtube_link)
-    if video_id:
-        st.write(f"Video ID: {video_id}")
-
-# Button to get detailed notes
-if st.button("Get Detailed Notes"):
-    transcript_text = extract_transcript_details(youtube_link)
-    
-    if transcript_text:
-        summary_prompt = custom_prompt if custom_prompt != default_prompt else get_prompt(summary_length)
-        summary = generate_gemini_content(transcript_text, summary_prompt)
-        
-        if translate_option and target_language:
-            summary = translate_text(summary, target_language)
-            st.markdown(f"## Detailed Notes (Translated to {target_language}):")
-        else:
-            st.markdown("## Detailed Notes:")
-        
-        st.write(summary)
-        
-        # Sentiment Analysis
-        polarity, subjectivity = sentiment_analysis(transcript_text)
-        st.write(f"Sentiment Polarity: {polarity}, Sentiment Subjectivity: {subjectivity}")
-        
-        # Keyword Extraction
-        keywords = extract_keywords(transcript_text)
-        st.write("Keywords:", keywords)
-        
-        # Generate Word Cloud
-        st.markdown("## Word Cloud:")
-        generate_wordcloud(transcript_text)
-        
-        # Download Summary
-        st.markdown(download_summary(summary), unsafe_allow_html=True)
-    else:
-        st.error("Failed to extract transcript details. Please check the YouTube link.")
+    video_id = extract_video_id(y
