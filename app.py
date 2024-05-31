@@ -8,6 +8,7 @@ from textblob import TextBlob
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 import base64
+from googletrans import Translator
 
 # Load environment variables
 load_dotenv()
@@ -15,7 +16,7 @@ load_dotenv()
 # Configure Google Generative AI
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-# Define the prompt
+# Define the default prompt
 default_prompt = """You are a YouTube video summarizer. You will be taking the transcript text
 and summarizing the entire video and providing the important summary in points
 within 250 words. Please provide the summary of the text given here:  """
@@ -53,9 +54,6 @@ def generate_gemini_content(transcript_text, prompt):
         model = genai.GenerativeModel("gemini-pro")
         response = model.generate_content(prompt + transcript_text)
         
-        # Log the entire response for debugging
-        st.write("Full Response:", response)
-
         # Check if response contains parts
         if hasattr(response, 'parts') and response.parts:
             return response.text
@@ -83,7 +81,7 @@ def extract_keywords(text, num_keywords=10):
 
 # Function to generate word cloud
 def generate_wordcloud(text):
-    wordcloud = WordCloud(width=800, height=400, background_color ='white').generate(text)
+    wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
     plt.figure(figsize=(8, 4))
     plt.imshow(wordcloud, interpolation='bilinear')
     plt.axis('off')
@@ -95,15 +93,23 @@ def download_summary(summary, filename="summary.txt"):
     href = f'<a href="data:file/txt;base64,{b64}" download="{filename}">Download Summary</a>'
     return href
 
+# Function to translate text
+def translate_text(text, target_language):
+    translator = Translator()
+    translation = translator.translate(text, dest=target_language)
+    return translation.text
+
 # Streamlit app title
 st.title("Clipcraft --> Your Video Summarizer")
 
 # Input for YouTube video link
 youtube_link = st.text_input("Enter YouTube Video Link:")
 
-# Options for summary length and custom prompt
+# Options for summary length, custom prompt, and translation
 summary_length = st.selectbox("Select Summary Length:", ["Short", "Medium", "Detailed"])
 custom_prompt = st.text_area("Custom Prompt (Optional):", default_prompt)
+translate_option = st.checkbox("Translate Summary")
+target_language = st.selectbox("Select Target Language for Translation:", ["es", "fr", "de", "zh", "ja"]) if translate_option else None
 
 # Function to get appropriate summary length prompt
 def get_prompt(length):
@@ -127,7 +133,12 @@ if st.button("Get Detailed Notes"):
         summary_prompt = custom_prompt if custom_prompt != default_prompt else get_prompt(summary_length)
         summary = generate_gemini_content(transcript_text, summary_prompt)
         
-        st.markdown("## Detailed Notes:")
+        if translate_option and target_language:
+            summary = translate_text(summary, target_language)
+            st.markdown(f"## Detailed Notes (Translated to {target_language}):")
+        else:
+            st.markdown("## Detailed Notes:")
+        
         st.write(summary)
         
         # Sentiment Analysis
